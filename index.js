@@ -15,8 +15,7 @@ app.use(cors());
 app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static("public"));
-
+app.use(express.static("public")); 
 
 app.get('/', (req, res) => {
  res.send('Hello World!');
