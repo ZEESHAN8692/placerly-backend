@@ -1,12 +1,13 @@
-import transporter from "../config/email"
-import otpVerifyModel from "../model/otpModel"
+import transporter from "../config/email.js"
+import EmailVerificationModel from "../models/otpModel.js";
+
 
 const sendEmailVerificationOTP = async (req, user) => {
   // Generate a random 6-digit number
   const otp = Math.floor(100000 + Math.random() * 900000);
 
   // Save OTP in Database
-  const gg = await new otpVerifyModel({ userId: user._id, otp: otp }).save();
+  const gg = await new EmailVerificationModel({ userId: user._id, otp: otp }).save();
   console.log('hh', gg);
 
   //  OTP Verification Link

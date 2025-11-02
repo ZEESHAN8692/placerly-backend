@@ -126,11 +126,31 @@ class AuthenticationController {
         return res.status(400).json({message : "Password is incorrect"})
       }
 
-      const token = jwt.sign({id : user._id} , process.env.JWT_SECRET)
+      const token = jwt.sign({_id : user._id , name : user.name , email : user.email , phone : user.phone } , process.env.JWT_SECRET)
+      res.cookie("token", token, {
+        httpOnly: true, 
+        secure: false, 
+        sameSite: "strict"
+      });
 
-      res.status(200).json({token})
+
+      res.status(200).json({
+        status: true,
+        message : "Login successfully",
+        data:user
+      })
     } catch (error) {
       console.error("Login Error:", error);
+      res.status(500).json({ message: "Internal Server Error" });
+    }
+  }
+
+  async logout (req , res){
+    try {
+      res.clearCookie("token")
+      res.status(200).json({message : "Logout successfully"})
+    } catch (error) {
+      console.error("Logout Error:", error);
       res.status(500).json({ message: "Internal Server Error" });
     }
   }

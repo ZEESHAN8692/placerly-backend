@@ -9,7 +9,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const uploadOnCloudinary = async (localFilePath, folder = "edumathon") => {
+const uploadOnCloudinary = async (localFilePath, folder = "placerly") => {
   try {
     if (!localFilePath) {
       return { error: "No file path provided" };
