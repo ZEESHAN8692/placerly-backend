@@ -216,6 +216,66 @@ class BlogController {
       return res.status(500).json({ success: false, message: err.message });
     }
   }
+
+
+  // Blog Comments 
+
+    async addComment(req, res) {
+    try {
+      const userId = req.user._id;
+      const { id } = req.params;
+      const { comment } = req.body;
+
+      if (!comment) return res.status(400).json({ message: "Comment is required" });
+
+      const blog = await BlogModel.findById(id);
+      if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+      const newComment = {
+        userId,
+        name: req.user.name,
+        comment,
+      };
+
+      blog.comments.push(newComment);
+      await blog.save();
+
+      return res.status(201).json({ success: true, message: "Comment added", comments: blog.comments });
+    } catch (err) {
+      return res.status(500).json({ success: false, message: err.message });
+    }
+  }
+
+  // Delete comment
+  async deleteComment(req, res) {
+    try {
+      const { id, commentId } = req.params;
+      const blog = await BlogModel.findById(id);
+      if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+      blog.comments = blog.comments.filter(c => c._id.toString() !== commentId);
+      await blog.save();
+
+      return res.status(200).json({ success: true, message: "Comment deleted" });
+    } catch (err) {
+      return res.status(500).json({ success: false, message: err.message });
+    }
+  }
+
+  //  Get all comments for a blog
+  async getComments(req, res) {
+    try {
+      const { id } = req.params;
+      const blog = await BlogModel.findById(id).select("comments");
+      if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+      return res.status(200).json({ success: true, comments: blog.comments });
+    } catch (err) {
+      return res.status(500).json({ success: false, message: err.message });
+    }
+  }
+ 
+ 
 }
 
 export default new BlogController();

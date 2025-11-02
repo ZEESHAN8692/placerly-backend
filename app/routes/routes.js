@@ -67,6 +67,10 @@ router.get("/blog/:id" , blogController.getBlogBySlug)
 router.put("/update-blog/:id" ,upload.single("coverImage") , blogController.updateBlog)
 router.delete("/delelte-blogs/:id" , blogController.deleteBlog)
 
+router.post("/add-comment/:id" , blogController.addComment)
+router.delete("/delete-comment/:id/:commentId" , blogController.deleteComment)
+router.get("/get-comments/:id" , blogController.getComments)
+
 // Assets Manage Routes 
 router.post("/crate-assets",assetsController.createAsset)
 router.get("/assets" , assetsController.getAllAssets)
