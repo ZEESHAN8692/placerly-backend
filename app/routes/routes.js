@@ -9,15 +9,18 @@ import userManageController from '../controller/userManageController.js';
 import blogController from '../controller/blogController.js';
 import assetsController from '../controller/assetsController.js';
 import transitionController from '../controller/transitionController.js';
+import subscriptionController from '../controller/subscriptionController.js';
+import { AuthCheck } from '../middleware/authCheck.js';
 const router = express.Router();
 
 // Authentication Routes
 router.post("/register" , authenticationController.register)
 router.post("/verify-email" , authenticationController.verifyEmail)
-router.get("/profile" , authenticationController.profile)
+router.get("/profile" ,AuthCheck, authenticationController.profile)
 router.put("/update-profile" , authenticationController.updateProfile)
 router.post("/reset-password" , authenticationController.resetPassword)
 router.post("/login" , authenticationController.login)
+router.post("/admin-login" , authenticationController.adminLogin)
 router.post("/logout" , authenticationController.logout)
 
 
@@ -70,6 +73,9 @@ router.delete("/delelte-blogs/:id" , blogController.deleteBlog)
 router.post("/add-comment/:id" , blogController.addComment)
 router.delete("/delete-comment/:id/:commentId" , blogController.deleteComment)
 router.get("/get-comments/:id" , blogController.getComments)
+
+// Subscription Routes
+
 
 // Assets Manage Routes 
 router.post("/crate-assets",assetsController.createAsset)

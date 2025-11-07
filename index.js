@@ -12,7 +12,10 @@ const app = express();
 Database()
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: [process.env.CLIENT_URL, process.env.ADMIN_URL],
+    credentials: true
+}));
 app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

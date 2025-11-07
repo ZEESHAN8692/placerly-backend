@@ -2,27 +2,39 @@ import transporter from "../config/email.js"
 import EmailVerificationModel from "../models/otpModel.js";
 
 
-const sendEmailVerificationOTP = async (req, user) => {
-  // Generate a random 6-digit number
-  const otp = Math.floor(100000 + Math.random() * 900000);
+const sendEmailVerificationOTP = async (user) => {
+  try {
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000);
 
-  // Save OTP in Database
-  const gg = await new EmailVerificationModel({ userId: user._id, otp: otp }).save();
-  console.log('hh', gg);
+    // Save OTP in DB
+    const savedOtp = await new EmailVerificationModel({
+      userId: user._id,
+      otp,
+    }).save();
 
-  //  OTP Verification Link
-  //const otpVerificationLink = `${process.env.FRONTEND_HOST}/account/verify-email`;
+    console.log("OTP saved:", savedOtp);
 
-  await transporter.sendMail({
-    from: process.env.EMAIL_FROM,
-    to: user.email,
-    subject: "OTP - Verify your account",
-    html: `<p>Dear ${user.name},</p><p>Thank you for signing up with our website. To complete your registration, please verify your email address by entering the following one-time password (OTP)</p>
-    <h2>OTP: ${otp}</h2>
-    <p>This OTP is valid for 15 minutes. If you didn't request this OTP, please ignore this email.</p>`
-  })
+    // Send email
+    await transporter.sendMail({
+      from: process.env.EMAIL_FROM,
+      to: user.email,
+      subject: "OTP - Verify your account",
+      html: `
+        <p>Dear ${user.name},</p>
+        <p>Thank you for signing up with our website. To complete your registration, please verify your email address using this OTP:</p>
+        <h2>${otp}</h2>
+        <p>This OTP is valid for 15 minutes. If you didn't request this OTP, please ignore this email.</p>
+      `,
+    });
 
-  return otp
-}
+    console.log("OTP email sent successfully to:", user.email);
+    return otp;
+
+  } catch (error) {
+    console.error("Error sending OTP:", error);
+    throw new Error("Failed to send verification email");
+  }
+};
 
 export default sendEmailVerificationOTP

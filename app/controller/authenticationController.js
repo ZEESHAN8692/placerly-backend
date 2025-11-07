@@ -1,7 +1,7 @@
 import sendEmailVerificationOTP from "../helper/sendEmailOtp.js";
 import EmailVerificationModel from "../models/otpModel.js";
 import { UserModel , userValidation } from "../models/userModel.js";
-
+import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
 class AuthenticationController {
@@ -11,20 +11,20 @@ class AuthenticationController {
             if (error) {
                 return res.status(400).json({ error: error.details[0].message });
             }
-            const { name, email, phone, password, confirmPassword } = req.body;
+            const { name, email, phone, password, confirmPassword , role } = req.body;
 
             const existingUser = await UserModel.findOne({ email });
             if (existingUser) {
                 return res.status(400).json({ error: "User already exists" });
             }
             const hash = await bcrypt.hash(password, 10);
-            const user = new UserModel({ name, email, phone, password: hash, confirmPassword });
+            const user = new UserModel({ name, email, phone, password: hash, confirmPassword: hash , role });
             await user.save();
 
             // send OTP Mail
-            await sendEmailVerificationOTP(req, res)
+            await sendEmailVerificationOTP(user)
 
-            return res.status(201).json({ message: "User registered successfully , OTP sent to email" });
+            return res.status(201).json({ message: "User registered successfully , OTP sent to email" , data : user });
 
         } catch (error) {
             return res.status(500).json({ error: "Internal server error" });
@@ -41,10 +41,10 @@ class AuthenticationController {
       }
 
       // Verify user
-      await User.findByIdAndUpdate(userId, { isVerified: true });
+      await UserModel.findByIdAndUpdate(userId, { isVerified: true });
 
       // Delete OTP after use
-      await otpVerifyModel.deleteMany({ userId });
+      await EmailVerificationModel.deleteMany({ userId });
 
       res.status(200).json({ message: "Email verified successfully" });
     } catch (error) {
@@ -56,7 +56,7 @@ class AuthenticationController {
 
   async profile(req, res) {
     try {
-      const user = await UserModel.findById(req.user.id).select("-password");
+      const user = await UserModel.findById(req.user._id).select("-password");
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -143,6 +143,43 @@ class AuthenticationController {
       console.error("Login Error:", error);
       res.status(500).json({ message: "Internal Server Error" });
     }
+  }
+
+  async adminLogin (req ,res){
+    try {
+      const {email , password} = req.body
+
+      const user = await UserModel.findOne({email})
+      if(!user){
+        return res.status(404).json({message : "User not found"})
+      }
+
+      const isMatch = await bcrypt.compare(password , user.password)
+
+      if(!isMatch){
+        return res.status(400).json({message : "Password is incorrect"})
+      }
+
+      const token = jwt.sign({_id : user._id , name : user.name , email : user.email , phone : user.phone } , process.env.JWT_SECRET)
+
+      if(user.role === "admin"){
+        res.cookie("token", token, {
+          httpOnly: true, 
+          secure: false, 
+          sameSite: "strict"
+        });
+        res.status(200).json({
+          status: true,
+          message : "Login successfully",
+          data:user
+        })
+      }else{
+        res.status(401).json({status: false , message : "You are not admin"})
+      }
+    } catch (error) {
+        console.error("Admin Login Error:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+      }
   }
 
   async logout (req , res){

@@ -7,6 +7,10 @@ class PricingController {
             if (error) {
                 return res.status(400).json({ message: error.message });
             }
+            const pricingLength = await PricingModel.countDocuments();
+            if (pricingLength >= 3) {
+                return res.status(400).json({ message: "Maximum 3 pricings allowed" });
+            }
             const { planName, description ,price , features } = req.body;   
             const pricing = new PricingModel({ planName, description ,price , features });
             await pricing.save();

@@ -43,45 +43,64 @@ import { UserModel } from "../models/userModel.js";
 
 
 
-const isLogging = (req, res, next) => {
-  let token;
-  const secretKey = process.env.JWT_SECRET;
-  console.log("Secret key:", secretKey);
-
-  // Check header
-  const authHeader = req.headers.cookie;
-  if (authHeader && authHeader.startsWith("Bearer")) {
-    token = authHeader.split(" ")[1];
-  }
-
-  // Check cookie
-  if (!token && req.cookies?.token) {
-    token = req.cookies.token;
-  }
- 
+const AuthCheck = (req, res, next) => {
+  const token = req.cookies.token;
+    // req?.body?.token || req?.query?.token || req?.headers["x-access-token"];
   if (!token) {
-    return res.status(401).json({ error: "No token provided" });
+    return res.status(400).json({
+      message: "Token is required for access this page",
+    });
   }
-
   try {
-    const decoded = jwt.verify(token, secretKey);
-    req.user = {
-      id: decoded._id,
-      role: decoded.role,
-      username: decoded.username,
-      full_name: decoded.full_name,
-    };
-    console.log("Decoded user:", req.user);
-    next();
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    );
+    console.log("before login data", req.user);
+    req.user = decoded;
+    console.log("afetr login data", req.user);
   } catch (err) {
-    console.error("JWT error:", err.message);
-    return res.status(401).json({ error: "Invalid or expired token" });
+    return res.status(400).json({
+      message: "Invalid token",
+    });
   }
+  return next();
 };
 
 
 
+
+const adminCheck = (req, res, next) => {
+  const token = req.cookies.token;
+    // req?.body?.token || req?.query?.token || req?.headers["x-access-token"];
+  if (!token) {
+    return res.status(400).json({
+      message: "Token is required for access this page",
+    });
+  }
+  try {
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    );
+    req.user = decoded;
+    console.log("afetr login data", req.user);
+    if (req.user.role !== "admin") {
+      return res.status(400).json({
+        message: "You are not admin",
+      });
+    }
+  } catch (err) {
+    return res.status(400).json({
+      message: "Invalid token",
+    });
+  }
+  return next();
+};
+
+
 export {
     verifyToken,
-    isLogging
+    AuthCheck,
+    adminCheck
 };
