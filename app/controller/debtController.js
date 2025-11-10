@@ -81,10 +81,17 @@ class DebtController {
 
       const debts = await DebtModel.aggregate(pipeline);
 
+       const debtsValue = await DebtModel.aggregate([
+        { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+        { $group: { _id: null, total: { $sum: "$amount" } }  },
+        {$unwind: "$total"},
+      ]);
+
       return res.status(200).json({
         success: true,
         count: debts.length,
         data: debts,
+        debtsValue: debtsValue
       });
     } catch (err) {
       console.error("Get All Debts Error:", err);
@@ -194,6 +201,22 @@ class DebtController {
       });
     } catch (err) {
       console.error("Delete Debt Error:", err);
+      return res.status(500).json({ success: false, message: err.message });
+    }
+  }
+
+  async getTotalDebtsValue(req, res) {
+    try {
+      const userId = req.user?._id;
+
+      const debts = await DebtModel.aggregate([
+        { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+        { $group: { _id: null, total: { $sum: "$amount" } } },
+      ]);
+
+      return res.status(200).json({ success: true, data: debts });
+    } catch (err) {
+      console.error("Get Total Debts Error:", err);
       return res.status(500).json({ success: false, message: err.message });
     }
   }

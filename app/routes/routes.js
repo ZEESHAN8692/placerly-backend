@@ -11,6 +11,7 @@ import assetsController from '../controller/assetsController.js';
 import transitionController from '../controller/transitionController.js';
 import subscriptionController from '../controller/subscriptionController.js';
 import { AuthCheck } from '../middleware/authCheck.js';
+import debtController from '../controller/debtController.js';
 const router = express.Router();
 
 // Authentication Routes
@@ -18,39 +19,39 @@ router.post("/register" , authenticationController.register)
 router.post("/verify-email" , authenticationController.verifyEmail)
 router.get("/profile" ,AuthCheck, authenticationController.profile)
 router.put("/update-profile" , authenticationController.updateProfile)
-router.post("/reset-password" , authenticationController.resetPassword)
+router.post("/reset-password" ,AuthCheck, authenticationController.resetPassword)
 router.post("/login" , authenticationController.login)
 router.post("/admin-login" , authenticationController.adminLogin)
-router.post("/logout" , authenticationController.logout)
+router.post("/logout" ,AuthCheck, authenticationController.logout)
 
 
 // User Manage Routes For Admin 
 
-router.get("/users" , userManageController.getAllUsers)
-router.get("/user/:id" , userManageController.getUserById)
-router.put("/update-user/:id" , userManageController.updateUser)
-router.delete("/delelte-users/:id" , userManageController.deleteUser)
+router.get("/users" ,AuthCheck, userManageController.getAllUsers)
+router.get("/user/:id" ,AuthCheck, userManageController.getUserById)
+router.put("/update-user/:id" ,AuthCheck, userManageController.updateUser)
+router.delete("/delelte-users/:id" ,AuthCheck, userManageController.deleteUser)
 
 
 // Banner Routes
 
-router.post("/create-banners" ,upload.single("imageUrl") , bannerController.createBanner)
+router.post("/create-banners" ,upload.single("imageUrl") ,AuthCheck, bannerController.createBanner)
 router.get("/banners" , bannerController.getBanners)
 router.get("/banner/:id" , bannerController.getBannerById)
-router.put("/update-banner/:id" ,upload.single("imageUrl") , bannerController.updateBanner)
-router.delete("/delelte-banners/:id" , bannerController.deleteBanner)
+router.put("/update-banner/:id" ,upload.single("imageUrl") ,AuthCheck, bannerController.updateBanner)
+router.delete("/delelte-banners/:id" ,AuthCheck, bannerController.deleteBanner)
 
 
 // FAQ Routes
-router.post("/create-faqs" , faqController.createFaq)
+router.post("/create-faqs" ,AuthCheck, faqController.createFaq)
 router.get("/faqs" , faqController.getFaqs)
 router.get("/faq/:id" , faqController.getFaq)
-router.put("/update-faq/:id" , faqController.updateFaq)
-router.delete("/delelte-faqs/:id" , faqController.deleteFaq)
+router.put("/update-faq/:id" ,AuthCheck, faqController.updateFaq)
+router.delete("/delelte-faqs/:id" ,AuthCheck, faqController.deleteFaq)
 
 
 // Pricing Routes 
-router.post("/create-pricings" , pricingController.createPricing)
+router.post("/create-pricings" ,AuthCheck, pricingController.createPricing)
 router.get("/pricings" , pricingController.getPricings)
 router.get("/pricing/:id" , pricingController.getPricing)
 router.put("/update-pricing/:id" , pricingController.updatePricing)
@@ -78,26 +79,30 @@ router.get("/get-comments/:id" , blogController.getComments)
 
 
 // Assets Manage Routes 
-router.post("/crate-assets",assetsController.createAsset)
-router.get("/assets" , assetsController.getAllAssets)
-router.get("/asset/:id" , assetsController.getAssetById)
-router.put("/update-asset/:id" , assetsController.updateAsset)
-router.delete("/delelte-assets/:id" , assetsController.deleteAsset)
+router.post("/crate-assets",AuthCheck,assetsController.createAsset)
+router.get("/assets" ,AuthCheck, assetsController.getAllAssets)
+router.get("/asset/:id" ,AuthCheck, assetsController.getAssetById)
+router.put("/update-asset/:id" ,AuthCheck, assetsController.updateAsset)
+router.delete("/delelte-assets/:id" ,AuthCheck, assetsController.deleteAsset)
+router.get("/totle-assets" ,AuthCheck, assetsController.getTotalAssetsValue)
+
 
 // Debts Manage Routes
-router.post("/create-debts",assetsController.createAsset)
-router.get("/debts" , assetsController.getAllAssets)
-router.get("/debt/:id" , assetsController.getAssetById)
-router.put("/update-debt/:id" , assetsController.updateAsset)
-router.delete("/delelte-debts/:id" , assetsController.deleteAsset)
+router.post("/create-debts",AuthCheck ,debtController.createDebt)
+router.get("/debts" ,AuthCheck , debtController.getAllDebts)
+router.get("/debt/:id" ,AuthCheck , debtController.getDebtById)
+router.put("/update-debt/:id" ,AuthCheck , debtController.updateDebt)
+router.delete("/delelte-debts/:id" ,AuthCheck , debtController.deleteDebt)
+router.get("/totle-debts" ,AuthCheck, debtController.getTotalDebtsValue)
+
 
 
 // Insurance Manage Routes
-router.post("/create-insurances",assetsController.createAsset)
-router.get("/insurances" , assetsController.getAllAssets)
-router.get("/insurance/:id" , assetsController.getAssetById)
-router.put("/update-insurance/:id" , assetsController.updateAsset)
-router.delete("/delelte-insurances/:id" , assetsController.deleteAsset) 
+router.post("/create-insurances",AuthCheck ,assetsController.createAsset)
+router.get("/insurances" ,AuthCheck , assetsController.getAllAssets)
+router.get("/insurance/:id" ,AuthCheck , assetsController.getAssetById)
+router.put("/update-insurance/:id" ,AuthCheck , assetsController.updateAsset)
+router.delete("/delelte-insurances/:id" ,AuthCheck , assetsController.deleteAsset) 
 
 
 // Transition Manage Routes

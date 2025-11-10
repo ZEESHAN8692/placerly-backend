@@ -7,12 +7,15 @@ class AssetController {
 
   async createAsset(req, res) {
     try {
-    
-      const userId = req.user?._id;
 
+      const userId = req.user?._id;
+      console.log("User Id :", userId);
       if (!userId)
         return res.status(401).json({ success: false, message: "Unauthorized access" });
 
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(400).json({ success: false, message: "Invalid user ID" });
+      }
 
       const { error } = assetValidation.validate(req.body);
       if (error)
@@ -23,8 +26,8 @@ class AssetController {
         return res.status(404).json({ success: false, message: "User not found" });
 
 
-      const asset = await AssetModel.create({
-        userId,
+      const asset = await AssetsModel.create({
+        userId: userId,
         type: req.body.type,
         name: req.body.name,
         accountName: req.body.accountName,
@@ -46,6 +49,7 @@ class AssetController {
   async getAllAssets(req, res) {
     try {
       const userId = req.user?._id;
+      console.log("User Id :", userId);
       if (!userId)
         return res.status(401).json({ success: false, message: "Unauthorized access" });
 
@@ -82,12 +86,27 @@ class AssetController {
         { $sort: { createdAt: -1 } },
       ];
 
-      const assets = await AssetModel.aggregate(pipeline);
+      const assets = await AssetsModel.aggregate(pipeline);
+      const totalAssetsValue = await AssetsModel.aggregate([
+        {
+          $match: {
+            userId: new mongoose.Types.ObjectId(userId),
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: "$balance" },
+          },
+        }
+      ])
 
       return res.status(200).json({
         success: true,
         count: assets.length,
+        totalAssetsValue: totalAssetsValue,
         data: assets,
+        
       });
     } catch (err) {
       console.error("Get All Assets Error:", err);
@@ -104,7 +123,7 @@ class AssetController {
       if (!mongoose.Types.ObjectId.isValid(id))
         return res.status(400).json({ success: false, message: "Invalid Asset ID" });
 
-      const asset = await AssetModel.aggregate([
+      const asset = await AssetsModel.aggregate([
         {
           $match: {
             _id: new mongoose.Types.ObjectId(id),
@@ -132,7 +151,7 @@ class AssetController {
             "userDetails.email": 1,
           },
         },
-      ]);
+      ]); 
 
       if (!asset || asset.length === 0)
         return res.status(404).json({ success: false, message: "Asset not found" });
@@ -153,11 +172,11 @@ class AssetController {
       if (!mongoose.Types.ObjectId.isValid(id))
         return res.status(400).json({ success: false, message: "Invalid Asset ID" });
 
-      const asset = await AssetModel.findOne({ _id: id, userId });
+      const asset = await AssetsModel.findOne({ _id: id, userId });
       if (!asset)
         return res.status(404).json({ success: false, message: "Asset not found or unauthorized" });
 
-      const updated = await AssetModel.findByIdAndUpdate(
+      const updated = await AssetsModel.findByIdAndUpdate(
         id,
         { ...req.body, updatedAt: new Date() },
         { new: true, runValidators: true }
@@ -183,7 +202,7 @@ class AssetController {
       if (!mongoose.Types.ObjectId.isValid(id))
         return res.status(400).json({ success: false, message: "Invalid Asset ID" });
 
-      const asset = await AssetModel.findOneAndDelete({ _id: id, userId });
+      const asset = await AssetsModel.findOneAndDelete({ _id: id, userId });
       if (!asset)
         return res.status(404).json({ success: false, message: "Asset not found or unauthorized" });
 
@@ -193,6 +212,30 @@ class AssetController {
       });
     } catch (err) {
       console.error("Delete Asset Error:", err);
+      return res.status(500).json({ success: false, message: err.message });
+    }
+  }
+
+  async getTotalAssetsValue (req, res) {
+    try {
+      const userId = req.user?._id;
+
+      const total = await AssetsModel.aggregate([
+        {
+          $match: {
+            userId: new mongoose.Types.ObjectId(userId),
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: "$balance" },
+          },
+        },
+      ])
+      return res.status(200).json({ success: true, data: total });
+    } catch (err) {
+      console.error("Get Total Assets Error:", err);
       return res.status(500).json({ success: false, message: err.message });
     }
   }

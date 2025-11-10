@@ -128,9 +128,10 @@ class AuthenticationController {
 
       const token = jwt.sign({_id : user._id , name : user.name , email : user.email , phone : user.phone } , process.env.JWT_SECRET)
       res.cookie("token", token, {
-        httpOnly: true, 
+        httpOnly: false, 
         secure: false, 
-        sameSite: "strict"
+        sameSite: "lax",
+        path : "/"
       });
 
 
@@ -160,13 +161,14 @@ class AuthenticationController {
         return res.status(400).json({message : "Password is incorrect"})
       }
 
-      const token = jwt.sign({_id : user._id , name : user.name , email : user.email , phone : user.phone } , process.env.JWT_SECRET)
+      const token = jwt.sign({_id : user._id, name : user.name , email : user.email , phone : user.phone } , process.env.JWT_SECRET)
 
       if(user.role === "admin"){
         res.cookie("token", token, {
-          httpOnly: true, 
+          httpOnly: false, 
           secure: false, 
-          sameSite: "strict"
+          sameSite: "lax",
+          path : "/"
         });
         res.status(200).json({
           status: true,
