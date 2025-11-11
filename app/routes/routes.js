@@ -12,6 +12,8 @@ import transitionController from '../controller/transitionController.js';
 import subscriptionController from '../controller/subscriptionController.js';
 import { AuthCheck } from '../middleware/authCheck.js';
 import debtController from '../controller/debtController.js';
+import insuranceController from '../controller/insuranceController.js';
+import utilsController from '../controller/utilsController.js';
 const router = express.Router();
 
 // Authentication Routes
@@ -75,7 +77,6 @@ router.post("/add-comment/:id" , blogController.addComment)
 router.delete("/delete-comment/:id/:commentId" , blogController.deleteComment)
 router.get("/get-comments/:id" , blogController.getComments)
 
-// Subscription Routes
 
 
 // Assets Manage Routes 
@@ -98,11 +99,20 @@ router.get("/totle-debts" ,AuthCheck, debtController.getTotalDebtsValue)
 
 
 // Insurance Manage Routes
-router.post("/create-insurances",AuthCheck ,assetsController.createAsset)
-router.get("/insurances" ,AuthCheck , assetsController.getAllAssets)
-router.get("/insurance/:id" ,AuthCheck , assetsController.getAssetById)
-router.put("/update-insurance/:id" ,AuthCheck , assetsController.updateAsset)
-router.delete("/delelte-insurances/:id" ,AuthCheck , assetsController.deleteAsset) 
+router.post("/create-insurances",AuthCheck ,insuranceController.createInsurance)
+router.get("/insurances" ,AuthCheck , insuranceController.getAllInsurances)
+router.get("/insurance/:id" ,AuthCheck , insuranceController.getInsuranceById)
+router.put("/update-insurance/:id" ,AuthCheck , insuranceController.updateInsurance)
+router.delete("/delelte-insurances/:id" ,AuthCheck , insuranceController.deleteInsurance) 
+
+
+
+// Utils Manage Routes
+router.post("/create-utilities",AuthCheck ,utilsController.createUtilities)
+router.get("/utilities" ,AuthCheck , utilsController.getAllUtilities)
+router.get("/utility/:id" ,AuthCheck , utilsController.getUtilityById)
+router.put("/update-utility/:id" ,AuthCheck , utilsController.updateUtility)
+router.delete("/delelte-utilities/:id" ,AuthCheck , utilsController.deleteUtility)
 
 
 // Transition Manage Routes

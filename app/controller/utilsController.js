@@ -4,7 +4,7 @@ import { UserModel } from "../models/userModel.js";
 
 class UtilsController {
 
-    async createUtils(req, res) {
+    async createUtilities(req, res) {
         try {
             const userId = req.user?._id;
             if (!userId)
@@ -42,7 +42,7 @@ class UtilsController {
     }
 
 
-    async getAllUtils(req, res) {
+    async getAllUtilities(req, res) {
         try {
             const userId = req.user?._id;
             if (!userId)
@@ -96,7 +96,7 @@ class UtilsController {
     }
 
 
-    async getUtilsById(req, res) {
+    async getUtilityById(req, res) {
         try {
             const userId = req.user?._id;
             const { id } = req.params;
@@ -146,7 +146,7 @@ class UtilsController {
     }
 
 
-    async updateUtils(req, res) {
+    async updateUtility(req, res) {
         try {
             const userId = req.user?._id;
             const { id } = req.params;
@@ -179,7 +179,7 @@ class UtilsController {
     }
 
 
-    async deleteUtils(req, res) {
+    async deleteUtility(req, res) {
         try {
             const userId = req.user?._id;
             const { id } = req.params;

@@ -4,7 +4,7 @@ import Joi from 'joi';
 
 const insuranceValidation = Joi.object({
     userId: Joi.string().required(),
-    type: Joi.string().valid('life', 'home').required(),
+    type: Joi.string().required(),
     provider: Joi.string().min(3).max(100).required(),
     policyNumber: Joi.string().min(3).max(50).required(),
     expiryDate: Joi.date().optional(),
@@ -16,7 +16,7 @@ const insuranceValidation = Joi.object({
 
 const insuranceSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    type: { type: String, enum: ['life', 'home'], required: true },
+    type: { type: String, required: true },
     provider: { type: String, required: true }, // ex: Aviva, Admiral
     policyNumber: { type: String, required: true },
     expiryDate: { type: Date },

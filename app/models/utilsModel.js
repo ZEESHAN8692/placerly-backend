@@ -4,7 +4,7 @@ import Joi from "joi";
 
 const utilsValidation = Joi.object({
   userId: Joi.string().required(),
-  type: Joi.string().valid('energy', 'water').required(),
+  type: Joi.string().required(),
   name: Joi.string().min(3).max(100).required(),
   accountNumber: Joi.string().min(3).max(50).required(),
   billingCycle: Joi.string().optional(),
@@ -13,7 +13,7 @@ const utilsValidation = Joi.object({
 
 const utilsSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  type: { type: String, enum: ['energy', 'water'], required: true },
+  type: { type: String, required: true },
   name: { type: String, required: true }, // ex: British Gas, Affinity Water
   accountNumber: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
