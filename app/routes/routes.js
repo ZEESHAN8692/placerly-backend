@@ -9,7 +9,7 @@ import userManageController from '../controller/userManageController.js';
 import blogController from '../controller/blogController.js';
 import assetsController from '../controller/assetsController.js';
 import transitionController from '../controller/transitionController.js';
-import subscriptionController from '../controller/subscriptionController.js';
+import userSubscriptionController from '../controller/subscriptionController.js';
 import { AuthCheck } from '../middleware/authCheck.js';
 import debtController from '../controller/debtController.js';
 import insuranceController from '../controller/insuranceController.js';
@@ -140,6 +140,12 @@ router.get("/executor/:id" , transitionController.getExecutorById)
 router.put("/update-executor/:id" , transitionController.updateExecutor)
 router.delete("/delelte-executors/:id" , transitionController.deleteExecutor)
 
+
+// Subscriptions 
+
+router.post("/create-checkout-session",userSubscriptionController.createCheckoutSession );
+router.get("/verify-payment",userSubscriptionController.verifyPayment );
+router.get("/user/:userId",userSubscriptionController.getUserSubscription); 
 
 
 

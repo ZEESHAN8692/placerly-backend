@@ -1,20 +1,17 @@
 import mongoose from "mongoose";
 import Joi from "joi";
 
-
 const UserSubscriptionValidation = Joi.object({
   userId: Joi.string().required(),
   planId: Joi.string().required(),
   paymentId: Joi.string().required(),
   amountPaid: Joi.number().required(),
-  currency: Joi.string().default("INR"),
+  currency: Joi.string().default("USD"),
   startDate: Joi.date().optional(),
   endDate: Joi.date().required(),
   status: Joi.string().valid("active", "expired", "cancelled", "pending").default("pending"),
   autoRenew: Joi.boolean().default(false),
 });
-
-
 
 const UserSubscriptionSchema = new mongoose.Schema(
   {
@@ -29,8 +26,9 @@ const UserSubscriptionSchema = new mongoose.Schema(
       required: true,
     },
     paymentId: {
-      type: String, // Stripe payment ID
+      type: String, // Stripe Payment Intent ID
       required: true,
+      unique: true, // ✅ prevent duplicates
     },
     amountPaid: {
       type: Number,
@@ -63,6 +61,4 @@ const UserSubscriptionSchema = new mongoose.Schema(
 
 const UserSubscriptionModel = mongoose.model("user_subscription", UserSubscriptionSchema);
 
-
-export { UserSubscriptionModel, UserSubscriptionValidation }
-
+export { UserSubscriptionModel, UserSubscriptionValidation };
