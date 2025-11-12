@@ -14,18 +14,20 @@ import { AuthCheck } from '../middleware/authCheck.js';
 import debtController from '../controller/debtController.js';
 import insuranceController from '../controller/insuranceController.js';
 import utilsController from '../controller/utilsController.js';
+import { UserModel } from '../models/userModel.js';
+import bankingController from '../controller/bankingController.js';
+import investmentController from '../controller/investmentController.js';
 const router = express.Router();
 
 // Authentication Routes
 router.post("/register" , authenticationController.register)
 router.post("/verify-email" , authenticationController.verifyEmail)
 router.get("/profile" ,AuthCheck, authenticationController.profile)
-router.put("/update-profile" , authenticationController.updateProfile)
+router.put("/update-profile" ,AuthCheck, authenticationController.updateProfile)
 router.post("/reset-password" ,AuthCheck, authenticationController.resetPassword)
 router.post("/login" , authenticationController.login)
 router.post("/admin-login" , authenticationController.adminLogin)
 router.post("/logout" ,AuthCheck, authenticationController.logout)
-
 
 // User Manage Routes For Admin 
 
@@ -113,6 +115,22 @@ router.get("/utilities" ,AuthCheck , utilsController.getAllUtilities)
 router.get("/utility/:id" ,AuthCheck , utilsController.getUtilityById)
 router.put("/update-utility/:id" ,AuthCheck , utilsController.updateUtility)
 router.delete("/delelte-utilities/:id" ,AuthCheck , utilsController.deleteUtility)
+
+// Banking Manage Routes
+router.post("/create-bankings",AuthCheck ,bankingController.createBanking)
+router.get("/bankings" ,AuthCheck , bankingController.getAllBankings)
+router.get("/banking/:id" ,AuthCheck , bankingController.getBankingById)
+router.put("/update-banking/:id" ,AuthCheck , bankingController.updateBanking)
+router.delete("/delelte-bankings/:id" ,AuthCheck , bankingController.deleteBanking)
+router.get("/totle-bankings" ,AuthCheck, bankingController.getTotalBalance)
+
+// Investment Manage Routes
+router.post("/create-investments",AuthCheck ,investmentController.createInvestment)
+router.get("/investments" ,AuthCheck , investmentController.getAllInvestments)
+router.get("/investment/:id" ,AuthCheck , investmentController.getInvestmentById)
+router.put("/update-investment/:id" ,AuthCheck , investmentController.updateInvestment)
+router.delete("/delelte-investments/:id" ,AuthCheck , investmentController.deleteInvestment)
+router.get("/totle-investments" ,AuthCheck, investmentController.getTotalInvestmentValue)
 
 
 // Transition Manage Routes

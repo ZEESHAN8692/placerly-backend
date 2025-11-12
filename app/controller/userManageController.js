@@ -87,34 +87,35 @@ class UserManageController {
   }
 
  
-  async updateUser(req, res) {
-    try {
-      const { id } = req.params;
+async updateUser(req, res) {
+  try {
+    const { id } = req.params;
 
-      if (req.body.email || req.body.password) {
-        const { error } = userValidation.validate(req.body);
-        if (error) return res.status(400).json({ success: false, message: error.details[0].message });
-      }
-
-      const updatedUser = await UserModel.findByIdAndUpdate(id, req.body, {
-        new: true,
-        runValidators: true,
-      }).populate("transitions");
-
-      if (!updatedUser) {
-        return res.status(404).json({ success: false, message: "User not found" });
-      }
-
-      res.status(200).json({
-        success: true,
-        message: "User updated successfully",
-        data: updatedUser,
-      });
-    } catch (err) {
-      res.status(500).json({ success: false, message: err.message });
+    // Validate other fields (like email or name) if provided in the body
+    if (req.body.email) {
+      const { error } = userValidation.validate(req.body);
+      if (error) return res.status(400).json({ success: false, message: error.details[0].message });
     }
-  }
 
+    // Update user (without updating the password)
+    const updatedUser = await UserModel.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true,
+    }).populate("transitions");
+
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+      data: updatedUser,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+}
 
   async deleteUser(req, res) {
     try {

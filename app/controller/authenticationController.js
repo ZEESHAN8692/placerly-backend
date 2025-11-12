@@ -69,7 +69,7 @@ class AuthenticationController {
 
   async updateProfile (req ,res){
     try {
-      const user = await UserModel.findById(req.user.id);
+      const user = await UserModel.findById(req.user._id);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -85,10 +85,11 @@ class AuthenticationController {
   }
 
   async resetPassword (req , res){
-    const {email ,oldPassword , password} = req.body
+    const {oldPassword , password} = req.body
 
     try {
-      const user = await UserModel.findOne({email})
+     
+      const user = await UserModel.findById(req.user._id)
       if(!user){
         return res.status(404).json({message : "User not found"})
       }
@@ -98,8 +99,8 @@ class AuthenticationController {
       if(!isMatch){
         return res.status(400).json({message : "Old password is incorrect"})
       }
-
-      user.password = password
+      const hash = await bcrypt.hash(password , 10)
+      user.password = hash
       await user.save()
 
       res.status(200).json({message : "Password updated successfully"})
