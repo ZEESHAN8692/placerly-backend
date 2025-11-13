@@ -8,11 +8,11 @@ class PricingController {
                 return res.status(400).json({ message: error.message });
             }
             const pricingLength = await PricingModel.countDocuments();
-            if (pricingLength >= 3) {
-                return res.status(400).json({ message: "Maximum 3 pricings allowed" });
+            if (pricingLength >= 6) {
+                return res.status(400).json({ message: "Maximum 6 pricings allowed" });
             }
-            const { planName, description ,price , features } = req.body;   
-            const pricing = new PricingModel({ planName, description ,price , features });
+            const { planName, description ,price , features , type } = req.body;   
+            const pricing = new PricingModel({ planName, description ,price , features , type });
             await pricing.save();
             res.status(201).json(pricing);
         } catch (error) {
@@ -55,6 +55,7 @@ class PricingController {
             pricing.description = req.body.description ?? pricing.description;
             pricing.price = req.body.price ?? pricing.price;
             pricing.features = req.body.features ?? pricing.features;
+            pricing.type = req.body.type ?? pricing.type;
             await pricing.save();
             res.json(pricing);
         } catch (error) {

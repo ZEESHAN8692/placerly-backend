@@ -17,7 +17,7 @@ const sendEmailVerificationOTP = async (user) => {
 
     // Send email
     await transporter.sendMail({
-      from: process.env.EMAIL_FROM,
+      from: `"Placerly" <${process.env.EMAIL_FROM}>`,
       to: user.email,
       subject: "OTP - Verify your account",
       html: `

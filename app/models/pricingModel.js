@@ -4,9 +4,10 @@ import mongoose from "mongoose";
 
 const PricingSchemaJoi = Joi.object({
   planName: Joi.string().min(5).max(15).required(),
-  description: Joi.string().min(8).max(15).required(),
+  description: Joi.string().min(8).max(100).required(),
   price: Joi.number().required(),
   features: Joi.array().items(Joi.string()).optional(),
+  type: Joi.string().required(),
 });
 
 const PricingSchema = new mongoose.Schema(
@@ -23,6 +24,9 @@ const PricingSchema = new mongoose.Schema(
     features: {
       type: [String],
     },
+    type: {
+      type: String,
+    }
   },
   { timestamps: true }
 );

@@ -11,6 +11,8 @@ const UserSubscriptionValidation = Joi.object({
   endDate: Joi.date().required(),
   status: Joi.string().valid("active", "expired", "cancelled", "pending").default("pending"),
   autoRenew: Joi.boolean().default(false),
+  address: Joi.object().required(),
+
 });
 
 const UserSubscriptionSchema = new mongoose.Schema(
@@ -26,9 +28,9 @@ const UserSubscriptionSchema = new mongoose.Schema(
       required: true,
     },
     paymentId: {
-      type: String, // Stripe Payment Intent ID
+      type: String, 
       required: true,
-      unique: true, // ✅ prevent duplicates
+      unique: true, 
     },
     amountPaid: {
       type: Number,
@@ -54,6 +56,11 @@ const UserSubscriptionSchema = new mongoose.Schema(
     autoRenew: {
       type: Boolean,
       default: false,
+    },
+    address: {
+      type: {},
+      required: true
+      
     },
   },
   { timestamps: true }

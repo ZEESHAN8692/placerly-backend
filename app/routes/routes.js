@@ -17,6 +17,7 @@ import utilsController from '../controller/utilsController.js';
 import { UserModel } from '../models/userModel.js';
 import bankingController from '../controller/bankingController.js';
 import investmentController from '../controller/investmentController.js';
+import enquiryController from '../controller/enquiryController.js';
 const router = express.Router();
 
 // Authentication Routes
@@ -143,9 +144,15 @@ router.delete("/delelte-executors/:id" , transitionController.deleteExecutor)
 
 // Subscriptions 
 
-router.post("/create-checkout-session",userSubscriptionController.createCheckoutSession );
-router.get("/verify-payment",userSubscriptionController.verifyPayment );
-router.get("/user/:userId",userSubscriptionController.getUserSubscription); 
+router.post("/create-checkout-session", AuthCheck,userSubscriptionController.createCheckoutSession );
+router.get("/verify-payment",AuthCheck , userSubscriptionController.verifyPayment );
+router.get("/user/:userId",AuthCheck , userSubscriptionController.getUserSubscription); 
+
+// Enquiry Manage Routes
+router.post("/create-enquiry" , enquiryController.createEnquiry)
+router.get("/enquiries" , enquiryController.getAllEnquiries)
+router.get("/enquiry/:id" , enquiryController.getEnquiryById)
+router.delete("/delelte-enquiries/:id" , enquiryController.deleteEnquiry)
 
 
 
