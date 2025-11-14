@@ -135,11 +135,12 @@ router.get("/totle-investments" ,AuthCheck, investmentController.getTotalInvestm
 
 
 // Transition Manage Routes
-router.post("/create-executors", transitionController.createExecutor)
-router.get("/executors" , transitionController.getAllExecutors)
-router.get("/executor/:id" , transitionController.getExecutorById)
-router.put("/update-executor/:id" , transitionController.updateExecutor)
-router.delete("/delelte-executors/:id" , transitionController.deleteExecutor)
+router.post("/create-executors",AuthCheck, transitionController.createExecutor)
+router.get("/executors" ,AuthCheck, transitionController.getAllExecutors)
+router.get("/executor/:id" ,AuthCheck, transitionController.getExecutorById)
+router.put("/update-executor/:id" ,AuthCheck, transitionController.updateExecutor)
+router.delete("/delelte-executors/:id" ,AuthCheck, transitionController.deleteExecutor)
+router.post("/executor/invite" , transitionController.handleInviteAction)
 
 
 // Subscriptions 

@@ -2,9 +2,9 @@ import dotenv from "dotenv";
 dotenv.config();
 import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
-import { ExecutorModel , executorValidation } from "../models/TransitionModel.js";
+import { ExecutorModel, executorValidation } from "../models/transitionModel.js";
 import { UserModel } from "../models/userModel.js";
-import sendMailExecutor from "../helper/sendMailExecutor.js";
+import sendMailExecutor, { ExecutorHasNotAccount, sendMailAcceptExecutor } from "../helper/sendMailExecutor.js";
 
 
 class ExecutorController {
@@ -35,32 +35,25 @@ class ExecutorController {
       };
       const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "7d" });
 
-      // Save token to DB
+
       executor.requestToken = token;
       await executor.save();
 
       // Invite link (frontend URL)
-      const inviteLink = `${process.env.APP_URL}/executor/invite/${token}`;
+      const inviteLink = `${process.env.CLIENT_URL}/executor/invite/${token}`;
 
-      // Email content
-      const html = `
-        <div style="font-family: Arial, sans-serif; color: #333">
-          <h2>Hello ${executor.name},</h2>
-          <p>${user.name} has added you as their <strong>Executor</strong> on <b>Placerly</b>.</p>
-          <p>To accept the invitation and gain access, please click the link below:</p>
-          <p><a href="${inviteLink}" style="background: #007bff; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none;">Accept Invitation</a></p>
-          <p>This link will expire in 7 days.</p>
-          <br/>
-          <p>Thank you,</p>
-          <p><strong>Placerly Team</strong></p>
-        </div>
-      `;
+
 
       // Send Email
       await sendMailExecutor({
         to: executor.email,
         subject: "Executor Invitation - Placerly",
-        html,
+        owner: user,
+        executor: {
+          name: req.body.name,
+          email: req.body.email
+        },
+        inviteLink
       });
 
       return res.status(201).json({
@@ -73,6 +66,145 @@ class ExecutorController {
       return res.status(500).json({ success: false, message: err.message });
     }
   }
+
+  async handleInviteAction(req, res) {
+    try {
+      const { action, token  } = req.body;
+
+      if (!action || !token) {
+        return res.status(400).json({
+          success: false,
+          message: "Action and token are required",
+        });
+      }
+
+      // decode token
+      let data;
+      try {
+        data = jwt.verify(token, process.env.JWT_SECRET);
+      } catch (err) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid or expired token",
+        });
+      }
+
+      const executor = await ExecutorModel.findById(data.executorId)
+        .populate("userId", "name email");
+
+      if (!executor) {
+        return res.status(404).json({
+          success: false,
+          message: "Executor not found",
+        });
+      }
+
+      // -------------------------
+      // ACTION HANDLERS
+      // -------------------------
+
+      // 1️ VALIDATE
+      if (action === "validate") {
+        return res.status(200).json({
+          success: true,
+          executorName: executor.name,
+          ownerName: executor.userId.name,
+          email: executor.email,
+          status: executor.status,
+        });
+      }
+
+      // 2️ ACCEPT
+      if (action === "accept") {
+        executor.status = "approved";
+        executor.executorUserId = data.userId;
+        executor.requestToken = null;
+        await executor.save();
+
+        await UserModel.findByIdAndUpdate(
+          executor.userId,  
+          {
+            $addToSet: { transitions: executor._id } 
+          }
+        );
+
+        await sendMailAcceptExecutor({
+          to: executor.email,
+          subject: "Executor Invitation Accepted - Placerly",
+          owner: executor.userId,
+          executor: {
+            name: executor.name,
+            email: executor.email
+          },
+        });
+
+        const findUser = await UserModel.findOne({email: executor.email});
+        if(!findUser){
+          const user = await UserModel.create({
+            name: executor.name,
+            email: executor.email,
+            phone: executor.contactNumber,
+            password: `${executor.name.replace(/\s/g, '')}@123`,
+            confirmPassword: `${executor.name.replace(/\s/g, '')}@123`,
+            role: "executor",
+            isVerified: true,
+            transitions: [executor._id]
+          });
+
+          await ExecutorHasNotAccount({
+            to: executor.email,
+            subject: "Executor Invitation Accepted - Placerly",
+            executor:{
+              name: executor.name,
+              email: executor.email,
+              password: `${executor.name.replace(/\s/g, '')}@123`
+            }
+          })
+
+        }else{
+          await UserModel.findOneAndUpdate(
+            {email: executor.email},
+            {
+              $addToSet: { transitions: executor._id } 
+            }
+          );
+        }
+
+
+
+        return res.status(200).json({
+          success: true,
+          message: "Executor invitation accepted",
+        });
+      }
+
+      // 3️ REJECT
+      if (action === "reject") {
+        executor.status = "revoked";
+        executor.requestToken = null;
+        await executor.save();
+
+        return res.status(200).json({
+          success: true,
+          message: "Executor invitation rejected",
+        });
+      }
+
+      // Invalid action  
+      return res.status(400).json({
+        success: false,
+        message: "Invalid action",
+      });
+
+    } catch (err) {
+      console.error("Handle Invite Error:", err);
+      return res.status(500).json({
+        success: false,
+        message: "Server error",
+      });
+    }
+  }
+
 
 
   async getAllExecutors(req, res) {

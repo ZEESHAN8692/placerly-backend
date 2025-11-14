@@ -135,6 +135,17 @@ class AuthenticationController {
         path : "/"
       });
 
+      const subcriptionStatus = user.subscription.status
+      console.log("subcriptionStatus" , subcriptionStatus)
+      if(subcriptionStatus === "active"){
+        res.cookie("subscriptionActive", subcriptionStatus, {
+          httpOnly: false, 
+          secure: false, 
+          sameSite: "lax",
+          path : "/"
+        })
+      }
+
 
       res.status(200).json({
         status: true,

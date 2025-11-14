@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema({
     phone: { type: Number, required: true },
     password: { type: String, required: true },
     confirmPassword: { type: String, required: true },
-    role: { type: String, enum: ["user", "admin"], default: "user" },
+    role: { type: String, enum: ["user", "admin","executor"], default: "user" },
     status: { type: String, enum: ["active", "inactive"], default: "active" },
     isVerified: { type: Boolean, default: false },
 
@@ -34,7 +34,8 @@ const userSchema = new mongoose.Schema({
     transitions: [
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Transition"
+            ref: "Transition",
+            unique: true
         }
     ],
 

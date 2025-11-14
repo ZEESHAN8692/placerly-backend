@@ -31,7 +31,7 @@ dotenv.config();
 
  const sendEnquiryMailToUser = async (userEmail, enquiry) => {
   const html = `
-    <div style="font-family: Arial, sans-serif; color: #333;  padding: 30px; border-radius: 10px;">
+    <div style="background: linear-gradient(135deg, #0B1F3A, #0A1526, #08101D); padding: 30px; border-radius: 12px; color: #fff;">
       <h2 style="margin-top: 0;">Hello ${enquiry.name},</h2>
       <p>Thank you for contacting <strong>Placerly</strong>! 💬</p>
       <p>We’ve received your enquiry and our support team will get back to you soon.</p>
