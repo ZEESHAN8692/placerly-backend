@@ -34,7 +34,7 @@ const userSchema = new mongoose.Schema({
     transitions: [
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Transition",
+            ref: "Executor",
             unique: true
         }
     ],

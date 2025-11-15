@@ -91,27 +91,36 @@ async updateUser(req, res) {
   try {
     const { id } = req.params;
 
-    // Validate other fields (like email or name) if provided in the body
-    if (req.body.email) {
-      const { error } = userValidation.validate(req.body);
-      if (error) return res.status(400).json({ success: false, message: error.details[0].message });
-    }
-
-    // Update user (without updating the password)
-    const updatedUser = await UserModel.findByIdAndUpdate(id, req.body, {
-      new: true,
-      runValidators: true,
-    }).populate("transitions");
-
-    if (!updatedUser) {
+    // Purana user fetch karo
+    const existingUser = await UserModel.findById(id);
+    if (!existingUser) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
+
+    // Direct update without validation
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      id,
+      {
+        name: req.body.name,
+        email: req.body.email,
+        phone: req.body.phone,
+        role: req.body.role,
+        status: req.body.status,
+        password: existingUser.password,          // old password keep
+        confirmPassword: existingUser.confirmPassword // old confirm password keep
+      },
+      {
+        new: true,
+        runValidators: false,  // ❗no validation
+      }
+    ).populate("transitions");
 
     res.status(200).json({
       success: true,
       message: "User updated successfully",
       data: updatedUser,
     });
+
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

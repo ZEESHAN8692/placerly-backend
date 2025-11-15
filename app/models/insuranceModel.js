@@ -18,7 +18,7 @@ const insuranceSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     type: { type: String, required: true },
     provider: { type: String, required: true }, // ex: Aviva, Admiral
-    policyNumber: { type: String, required: true },
+    policyNumber: { type: String, required: true },// ex: 12345678
     expiryDate: { type: Date },
     coverageAmount: {
         type: Number,

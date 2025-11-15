@@ -9,7 +9,7 @@ const ServiceSchemaJoi = Joi.object({
   image: Joi.string().optional(),
 });
 
-// Mongoose schema for service
+
 const ServiceSchema = new Schema(
   {
     title: {

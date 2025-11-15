@@ -18,6 +18,8 @@ import { UserModel } from '../models/userModel.js';
 import bankingController from '../controller/bankingController.js';
 import investmentController from '../controller/investmentController.js';
 import enquiryController from '../controller/enquiryController.js';
+import DashboardController from '../controller/DashboardController.js';
+import adminDashboard from '../controller/adminDashboard.js';
 const router = express.Router();
 
 // Authentication Routes
@@ -154,6 +156,11 @@ router.post("/create-enquiry" , enquiryController.createEnquiry)
 router.get("/enquiries" , enquiryController.getAllEnquiries)
 router.get("/enquiry/:id" , enquiryController.getEnquiryById)
 router.delete("/delelte-enquiries/:id" , enquiryController.deleteEnquiry)
+
+
+// Dashboard 
+router.get("/dashboard" ,AuthCheck, DashboardController.getDashboard)
+router.get("/admin-dashboard" ,AuthCheck, adminDashboard.adminDashboard)
 
 
 
