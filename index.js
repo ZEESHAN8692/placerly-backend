@@ -5,7 +5,10 @@ import Database from "./app/config/database.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import router from "./app/routes/routes.js";
+import http from "http";
+import { Server } from "socket.io";
 const app = express();
+
 
 
 // Database
@@ -27,9 +30,28 @@ app.get('/', (req, res) => {
 app.use("/api", router)
 
 
-
-
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
- console.log(`Server running on port ${port}`);
+// HTTP + SOCKET SERVER
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: [process.env.CLIENT_URL, process.env.ADMIN_URL, "http://localhost:5174"],
+    credentials: true
+  }
 });
+
+export { io };
+
+// Socket Logic
+import chatSocket from "./app/sockets/chat.socket.js";
+chatSocket(io);
+const port = process.env.PORT || 3000;
+server.listen(port, () => {
+  console.log("Server running on " + port);
+});
+
+
+
+
+// app.listen(port, () => {
+//  console.log(`Server running on port ${port}`);
+// });
