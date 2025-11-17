@@ -127,7 +127,7 @@ class AuthenticationController {
         return res.status(400).json({message : "Password is incorrect"})
       }
 
-      const token = jwt.sign({_id : user._id , name : user.name , email : user.email , phone : user.phone } , process.env.JWT_SECRET)
+      const token = jwt.sign({_id : user._id , name : user.name , email : user.email , phone : user.phone , role : user.role } , process.env.JWT_SECRET)
       res.cookie("token", token, {
         httpOnly: false, 
         secure: false, 
@@ -167,13 +167,17 @@ class AuthenticationController {
         return res.status(404).json({message : "User not found"})
       }
 
+      if(user.role !== "admin"){
+        return res.status(401).json({message : "You are not admin"})
+      }
+
       const isMatch = await bcrypt.compare(password , user.password)
 
       if(!isMatch){
         return res.status(400).json({message : "Password is incorrect"})
       }
 
-      const token = jwt.sign({_id : user._id, name : user.name , email : user.email , phone : user.phone } , process.env.JWT_SECRET)
+      const token = jwt.sign({_id : user._id, name : user.name , email : user.email , phone : user.phone, role : user.role } , process.env.JWT_SECRET)
 
       if(user.role === "admin"){
         res.cookie("token", token, {

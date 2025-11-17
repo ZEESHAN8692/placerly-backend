@@ -42,7 +42,6 @@ import { UserModel } from "../models/userModel.js";
 };
 
 
-
 const AuthCheck = (req, res, next) => {
   const token = req.cookies.token;
     // req?.body?.token || req?.query?.token || req?.headers["x-access-token"];
@@ -98,9 +97,43 @@ const adminCheck = (req, res, next) => {
   return next();
 };
 
+const executorBlock = (req, res, next) => {
+  const token = req.cookies.token;
+
+  if (!token) {
+    return res.status(400).json({
+      message: "Token is required to access this page",
+    });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+
+    console.log("after login data", req.user);
+
+    if (req.user.role === "executor") {
+      return res.status(403).json({
+        message: `Access declined: You are executor, you cannot ${req.method.toLowerCase()} here`,
+      });
+    }
+
+    next(); // user allowed
+
+  } catch (err) {
+    return res.status(400).json({
+      message: "Invalid token",
+    });
+  }
+};
+
+
+
 
 export {
     verifyToken,
     AuthCheck,
-    adminCheck
+    adminCheck,
+    executorBlock
+  
 };

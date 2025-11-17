@@ -200,6 +200,7 @@ class BlogController {
             coverImage: 1,
             author: 1,
             createdAt: 1,
+            comments: 1
           },
         },
       ]);
@@ -241,6 +242,7 @@ class BlogController {
             coverImage: 1,
             author: 1,
             createdAt: 1,
+            comments: 1
           }
         }
       ]);
@@ -273,6 +275,9 @@ class BlogController {
 
       const blog = await BlogModel.findById(id);
       if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+      const findComment = blog.comments.find(c => c.userId.toString() === userId.toString());
+      if (findComment) return res.status(400).json({ message: "You have already commented on this blog" });
 
       const newComment = {
         userId,
