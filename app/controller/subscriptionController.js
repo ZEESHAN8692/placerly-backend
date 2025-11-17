@@ -9,56 +9,56 @@ import sendEmailSubscription from "../helper/sendEmailSubscription.js";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 class UserSubscriptionController {
-async createCheckoutSession(req, res) {
-  try {
-    const { planId, address } = req.body;
-    const userId = req.user._id;
+  async createCheckoutSession(req, res) {
+    try {
+      const { planId, address } = req.body;
+      const userId = req.user._id;
 
-    if (!planId || !address) {
-      return res.status(400).json({ message: "Plan ID and Address are required" });
-    }
+      if (!planId || !address) {
+        return res.status(400).json({ message: "Plan ID and Address are required" });
+      }
 
-    const plan = await PricingModel.findById(planId);
-    if (!plan) return res.status(404).json({ message: "Plan not found" });
+      const plan = await PricingModel.findById(planId);
+      if (!plan) return res.status(404).json({ message: "Plan not found" });
 
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      mode: "payment",
-      line_items: [
-        {
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: plan.planName,
-              description: plan.description,
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        mode: "payment",
+        line_items: [
+          {
+            price_data: {
+              currency: "usd",
+              product_data: {
+                name: plan.planName,
+                description: plan.description,
+              },
+              unit_amount: Math.round(plan.price * 100),
             },
-            unit_amount: Math.round(plan.price * 100),
+            quantity: 1,
           },
-          quantity: 1,
+        ],
+        metadata: {
+          planId,
+          userId,
+          address: JSON.stringify(address),
         },
-      ],
-      metadata: { 
-        planId, 
-        userId, 
-        address: JSON.stringify(address),
-      },
-      success_url: `${process.env.CLIENT_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.CLIENT_URL}/payment-failed`,
-    });
+        success_url: `${process.env.CLIENT_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.CLIENT_URL}/payment-failed`,
+      });
 
-    res.status(200).json({ url: session.url });
-  } catch (err) {
-    console.error("Stripe Session Error:", err);
-    res.status(500).json({ message: "Error creating checkout session" });
+      res.status(200).json({ url: session.url });
+    } catch (err) {
+      console.error("Stripe Session Error:", err);
+      res.status(500).json({ message: "Error creating checkout session" });
+    }
   }
-}
 
   async verifyPayment(req, res) {
     try {
       const { session_id } = req.query;
       if (!session_id) return res.status(400).json({ message: "Session ID required" });
 
-     
+
       const session = await stripe.checkout.sessions.retrieve(session_id);
 
       if (!session) {
@@ -71,21 +71,28 @@ async createCheckoutSession(req, res) {
 
       const { planId, userId } = session.metadata;
 
-      
+
       const plan = await PricingModel.findById(planId);
       if (!plan) return res.status(404).json({ message: "Plan not found" });
 
- 
+
       const startDate = new Date();
       const endDate = new Date();
 
-      if (plan.durationMonths) {
-        endDate.setMonth(endDate.getMonth() + plan.durationMonths);
-      } else {
-        endDate.setMonth(endDate.getMonth() + 1); 
+      if (plan.type === "monthly") {
+        endDate.setMonth(startDate.getMonth() + 1);
+      }
+      else if (plan.type === "yearly") {
+        endDate.setFullYear(startDate.getFullYear() + 1);
+      }
+      else {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid plan type",
+        });
       }
 
-      
+
       const existing = await UserSubscriptionModel.findOne({ paymentId: session.payment_intent });
       if (existing) {
         return res.status(200).json({ message: "Payment already verified", data: existing });
@@ -105,11 +112,11 @@ async createCheckoutSession(req, res) {
       });
 
       await UserModel.findByIdAndUpdate(userId, {
-        subscription:{
+        subscription: {
           planId: plan._id,
           planName: plan.planName,
           startDate: startDate,
-          endDate : endDate,
+          endDate: endDate,
           status: "active",
         }
       });
@@ -121,7 +128,7 @@ async createCheckoutSession(req, res) {
 
       await sendEmailSubscription(user.email, subscription);
 
-      
+
 
       res.status(200).json({
         message: "Payment verified and subscription activated successfully",
@@ -146,6 +153,16 @@ async createCheckoutSession(req, res) {
       res.status(200).json({ data: subs });
     } catch (err) {
       console.error("Get User Subscription Error:", err);
+      res.status(500).json({ message: "Error fetching subscriptions" });
+    }
+  }
+
+  async getAllSubscriptions(req, res) {
+    try {
+      const subs = await UserSubscriptionModel.find().populate("planId", "planName price").populate("userId", "name").sort({ createdAt: -1 });
+      res.status(200).json({ data: subs });
+    } catch (err) {
+      console.error("Get All Subscriptions Error:", err);
       res.status(500).json({ message: "Error fetching subscriptions" });
     }
   }

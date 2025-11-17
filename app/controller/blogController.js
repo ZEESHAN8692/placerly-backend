@@ -15,7 +15,7 @@ class BlogController {
       let imageUrl = null;
       let public_id = null;
 
-    
+
       if (req.file) {
         const uploaded = await uploadOnCloudinary(req.file.path, "blogs");
         imageUrl = uploaded.secure_url;
@@ -61,7 +61,7 @@ class BlogController {
       let newImageUrl = blog.coverImage;
       let newPublicId = blog.public_id;
 
-      
+
       if (req.file) {
         if (blog.public_id) {
           await deleteFromCloudinary(blog.public_id);
@@ -71,7 +71,7 @@ class BlogController {
         newPublicId = uploaded.public_id;
       }
 
-   
+
       let newSlug = blog.slug;
       if (req.body.title && req.body.title !== blog.title) {
         newSlug = slugify(req.body.title, { lower: true, strict: true });
@@ -112,7 +112,7 @@ class BlogController {
       if (!blog)
         return res.status(404).json({ success: false, message: "Blog not found" });
 
- 
+
       if (blog.public_id) {
         await deleteFromCloudinary(blog.public_id);
       }
@@ -183,7 +183,7 @@ class BlogController {
     }
   }
 
-  
+
   async getBlogBySlug(req, res) {
     try {
       const { slug } = req.params;
@@ -217,10 +217,53 @@ class BlogController {
     }
   }
 
+  async getBlogById(req, res) {
+    try {
+      const { id } = req.params;
+
+      if (!mongoose.Types.ObjectId.isValid(id))
+        return res.status(400).json({ success: false, message: "Invalid blog ID" });
+
+      const blog = await BlogModel.aggregate([
+        {
+          $match: {
+            _id: new mongoose.Types.ObjectId(id),
+            status: "active"
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            title: 1,
+            subject: 1,
+            description: 1,
+            slug: 1,
+            coverImage: 1,
+            author: 1,
+            createdAt: 1,
+          }
+        }
+      ]);
+
+      if (!blog || blog.length === 0)
+        return res.status(404).json({ success: false, message: "Blog not found" });
+
+      return res.status(200).json({
+        success: true,
+        message: "Blog found successfully",
+        data: blog[0],
+      });
+
+    } catch (err) {
+      console.error("Get Blog by ID Error:", err);
+      return res.status(500).json({ success: false, message: err.message });
+    }
+  }
+
 
   // Blog Comments 
 
-    async addComment(req, res) {
+  async addComment(req, res) {
     try {
       const userId = req.user._id;
       const { id } = req.params;
@@ -274,8 +317,8 @@ class BlogController {
       return res.status(500).json({ success: false, message: err.message });
     }
   }
- 
- 
+
+
 }
 
 export default new BlogController();

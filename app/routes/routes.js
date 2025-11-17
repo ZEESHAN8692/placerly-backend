@@ -10,11 +10,10 @@ import blogController from '../controller/blogController.js';
 import assetsController from '../controller/assetsController.js';
 import transitionController from '../controller/transitionController.js';
 import userSubscriptionController from '../controller/subscriptionController.js';
-import { AuthCheck } from '../middleware/authCheck.js';
+import { AuthCheck , adminCheck } from '../middleware/authCheck.js';
 import debtController from '../controller/debtController.js';
 import insuranceController from '../controller/insuranceController.js';
 import utilsController from '../controller/utilsController.js';
-import { UserModel } from '../models/userModel.js';
 import bankingController from '../controller/bankingController.js';
 import investmentController from '../controller/investmentController.js';
 import enquiryController from '../controller/enquiryController.js';
@@ -42,11 +41,11 @@ router.delete("/delelte-users/:id" ,AuthCheck, userManageController.deleteUser)
 
 // Banner Routes
 
-router.post("/create-banners" ,upload.single("imageUrl") ,AuthCheck, bannerController.createBanner)
+router.post("/create-banners" ,upload.single("imageUrl") ,AuthCheck,adminCheck, bannerController.createBanner)
 router.get("/banners" , bannerController.getBanners)
 router.get("/banner/:id" , bannerController.getBannerById)
-router.put("/update-banner/:id" ,upload.single("imageUrl") ,AuthCheck, bannerController.updateBanner)
-router.delete("/delelte-banners/:id" ,AuthCheck, bannerController.deleteBanner)
+router.put("/update-banner/:id" ,upload.single("imageUrl") ,AuthCheck,adminCheck, bannerController.updateBanner)
+router.delete("/delelte-banners/:id" ,AuthCheck,adminCheck, bannerController.deleteBanner)
 
 
 // FAQ Routes
@@ -54,7 +53,7 @@ router.post("/create-faqs" ,AuthCheck, faqController.createFaq)
 router.get("/faqs" , faqController.getFaqs)
 router.get("/faq/:id" , faqController.getFaq)
 router.put("/update-faq/:id" ,AuthCheck, faqController.updateFaq)
-router.delete("/delelte-faqs/:id" ,AuthCheck, faqController.deleteFaq)
+router.delete("/delete-faq/:id" ,AuthCheck, faqController.deleteFaq)
 
 
 // Pricing Routes 
@@ -74,9 +73,10 @@ router.delete("/delelte-services/:id" , serviceController.deleteService)
 // Blog Manage Routes 
 router.post("/create-blogs" ,upload.single("coverImage") , blogController.createBlog)
 router.get("/blogs" , blogController.getAllBlogs)
-router.get("/blog/:id" , blogController.getBlogBySlug)
+router.get("/blog/:slug" , blogController.getBlogBySlug)
+router.get("/blog-by-id/:id" , blogController.getBlogById)
 router.put("/update-blog/:id" ,upload.single("coverImage") , blogController.updateBlog)
-router.delete("/delelte-blogs/:id" , blogController.deleteBlog)
+router.delete("/delete-blog/:id" , blogController.deleteBlog)
 
 router.post("/add-comment/:id" , blogController.addComment)
 router.delete("/delete-comment/:id/:commentId" , blogController.deleteComment)
@@ -150,12 +150,13 @@ router.post("/executor/invite" , transitionController.handleInviteAction)
 router.post("/create-checkout-session", AuthCheck,userSubscriptionController.createCheckoutSession );
 router.get("/verify-payment",AuthCheck , userSubscriptionController.verifyPayment );
 router.get("/user/:userId",AuthCheck , userSubscriptionController.getUserSubscription); 
+router.get("/subscriptions",AuthCheck , userSubscriptionController.getAllSubscriptions);
 
 // Enquiry Manage Routes
 router.post("/create-enquiry" , enquiryController.createEnquiry)
-router.get("/enquiries" , enquiryController.getAllEnquiries)
-router.get("/enquiry/:id" , enquiryController.getEnquiryById)
-router.delete("/delelte-enquiries/:id" , enquiryController.deleteEnquiry)
+router.get("/enquiries" ,AuthCheck, enquiryController.getAllEnquiries)
+router.get("/enquiry/:id" ,AuthCheck, enquiryController.getEnquiryById)
+router.delete("/delelte-enquiries/:id" ,AuthCheck, enquiryController.deleteEnquiry)
 
 
 // Dashboard 

@@ -3,8 +3,6 @@ import { FaQModel , faqSchemaJoi } from "../models/faqModel.js";
 class FAQController {
     async createFaq(req , res){
         try {
-            const { error } = faqSchemaJoi.validate(req.body);
-            if (error) return res.status(400).json({ error: error.details[0].message });
 
             const faq = new FaQModel(req.body);
             await faq.save();

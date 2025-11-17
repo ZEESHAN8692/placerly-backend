@@ -6,7 +6,7 @@ import Joi from "joi";
   title: Joi.string().min(3).max(150).required(),
   subject: Joi.string().min(3).max(100).required(),
   coverImage: Joi.string().optional(),
-  description: Joi.string().min(10).required(),
+  description: Joi.string().required(),
   author: Joi.string().optional(),
   status: Joi.string().valid("active", "inactive").default("active"),
 });
