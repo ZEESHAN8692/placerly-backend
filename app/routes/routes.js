@@ -45,7 +45,7 @@ router.post("/create-banners" ,upload.single("imageUrl") ,AuthCheck,adminCheck, 
 router.get("/banners" , bannerController.getBanners)
 router.get("/banner/:id" , bannerController.getBannerById)
 router.put("/update-banner/:id" ,upload.single("imageUrl") ,AuthCheck,adminCheck, bannerController.updateBanner)
-router.delete("/delelte-banners/:id" ,AuthCheck,adminCheck, bannerController.deleteBanner)
+router.delete("/delete-banner/:id" ,AuthCheck,adminCheck, bannerController.deleteBanner)
 
 
 // FAQ Routes

@@ -5,11 +5,13 @@ import { UtilsModel } from "../models/utilsModel.js";
 import { BankingModel } from "../models/bankingModel.js";
 import { InvestmentModel } from "../models/inventmentsModel.js";
 import mongoose from "mongoose";
+import { UserModel } from "../models/userModel.js";
 
 class DashboardController{
 async getDashboard(req, res) {
   try {
     const userId = req.user?._id;
+    
 
     if (!userId) {
       return res.status(401).json({

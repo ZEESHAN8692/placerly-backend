@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import { ExecutorModel, executorValidation } from "../models/transitionModel.js";
 import { UserModel } from "../models/userModel.js";
 import sendMailExecutor, { ExecutorHasNotAccount, sendMailAcceptExecutor } from "../helper/sendMailExecutor.js";
+import bcrypt from "bcryptjs";
 
 
 class ExecutorController {
@@ -99,9 +100,6 @@ class ExecutorController {
         });
       }
 
-      // -------------------------
-      // ACTION HANDLERS
-      // -------------------------
 
       // 1️ VALIDATE
       if (action === "validate") {
@@ -139,13 +137,15 @@ class ExecutorController {
         });
 
         const findUser = await UserModel.findOne({email: executor.email});
+        const hashPassword = await bcrypt.hash(`${executor.name.replace(/\s/g, '')}@123`, 10);
+        const hashConfirmPassword = await bcrypt.hash(`${executor.name.replace(/\s/g, '')}@123`, 10);
         if(!findUser){
           const user = await UserModel.create({
             name: executor.name,
             email: executor.email,
             phone: executor.contactNumber,
-            password: `${executor.name.replace(/\s/g, '')}@123`,
-            confirmPassword: `${executor.name.replace(/\s/g, '')}@123`,
+            password: hashPassword,
+            confirmPassword: hashConfirmPassword,
             role: "executor",
             isVerified: true,
             transitions: [executor._id]
@@ -349,8 +349,14 @@ class ExecutorController {
 
       if (!mongoose.Types.ObjectId.isValid(id))
         return res.status(400).json({ success: false, message: "Invalid Executor ID" });
-
       const executor = await ExecutorModel.findOneAndDelete({ _id: id, userId });
+      const user = await UserModel.findById(userId);
+      if(!user) return res.status(404).json({ success: false, message: "User not found" });
+      const findExecutorInUser =user.transitions.find((transition) => transition.toString() === id);
+      if (findExecutorInUser) {
+        user.transitions.pull(findExecutorInUser);
+        await user.save();
+      }
       if (!executor)
         return res.status(404).json({
           success: false,
