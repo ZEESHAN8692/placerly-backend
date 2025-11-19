@@ -5,22 +5,39 @@ import { UtilsModel } from "../models/utilsModel.js";
 import { BankingModel } from "../models/bankingModel.js";
 import { InvestmentModel } from "../models/inventmentsModel.js";
 import mongoose from "mongoose";
-import { UserModel } from "../models/userModel.js";
+import { ExecutorModel } from "../models/transitionModel.js";
 
 class DashboardController{
 async getDashboard(req, res) {
   try {
-    const userId = req.user?._id;
-    
+    let loggedInUserId = req.user?._id;
 
-    if (!userId) {
+    if (!loggedInUserId) {
       return res.status(401).json({
         success: false,
         message: "Unauthorized user"
       });
     }
 
-    const userObjectId = new mongoose.Types.ObjectId(userId);
+    let actualUserId = loggedInUserId; 
+
+    if (req.user.role === "executor") {
+      const executor = await ExecutorModel.findOne({
+        email: req.user.email,
+        status: "approved"
+      });
+
+      if (!executor) {
+        return res.status(403).json({
+          success: false,
+          message: "You are not assigned as executor to any user"
+        });
+      }
+
+      actualUserId = executor.executorUserId;
+    }
+
+    const userObjectId = new mongoose.Types.ObjectId(actualUserId);
 
     const totalAssetValue = await AssetsModel.aggregate([
       { $match: { userId: userObjectId } },
@@ -74,6 +91,7 @@ async getDashboard(req, res) {
     res.status(500).json({ message: "Internal Server Error" });
   }
 }
+
 
 }
 

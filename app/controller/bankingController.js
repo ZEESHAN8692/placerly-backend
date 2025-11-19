@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { BankingModel, bankingValidation } from "../models/bankingModel.js";
 import { UserModel } from "../models/userModel.js";
+import { ExecutorModel } from "../models/transitionModel.js";
 
 class BankingController {
 
@@ -37,63 +38,91 @@ class BankingController {
     }
   }
 
-  async getAllBankings(req, res) {
-    try {
-      const userId = req.user?._id;
-      if (!userId)
-        return res.status(401).json({ success: false, message: "Unauthorized access" });
+async getAllBankings(req, res) {
+  try {
+    let loggedInUserId = req.user?._id;
 
-      const { type, search } = req.query;
-      const matchStage = { userId: new mongoose.Types.ObjectId(userId) };
-
-      if (type) matchStage.type = type;
-      if (search) matchStage.accountName = { $regex: search, $options: "i" };
-
-      const pipeline = [
-        { $match: matchStage },
-        {
-          $lookup: {
-            from: "users",
-            localField: "userId",
-            foreignField: "_id",
-            as: "userDetails",
-          },
-        },
-        { $unwind: "$userDetails" },
-        {
-          $project: {
-            _id: 1,
-            type: 1,
-            accountName: 1,
-            accountNumber: 1,
-            balance: 1,
-            createdAt: 1,
-            updatedAt: 1,
-            "userDetails.name": 1,
-            "userDetails.email": 1,
-          },
-        },
-        { $sort: { createdAt: -1 } },
-      ];
-
-      const bankings = await BankingModel.aggregate(pipeline);
-
-      const totalBalance = await BankingModel.aggregate([
-        { $match: { userId: new mongoose.Types.ObjectId(userId) } },
-        { $group: { _id: null, totalBalance: { $sum: "$balance" } } },
-      ]);
-
-      return res.status(200).json({
-        success: true,
-        count: bankings.length,
-        data: bankings,
-        totalBalance: totalBalance[0]?.totalBalance || 0,
+    if (!loggedInUserId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized access",
       });
-    } catch (err) {
-      console.error("Get All Banking Error:", err);
-      return res.status(500).json({ success: false, message: err.message });
     }
+
+    let actualUserId = loggedInUserId;
+
+    if (req.user.role === "executor") {
+      const executor = await ExecutorModel.findOne({
+        email: req.user.email,
+        status: "approved",
+      });
+
+      if (!executor) {
+        return res.status(403).json({
+          success: false,
+          message: "You are not assigned as executor to any user",
+        });
+      }
+
+      actualUserId = executor.executorUserId;
+    }
+
+    const userObjectId = new mongoose.Types.ObjectId(actualUserId);
+
+    const { type, search } = req.query;
+
+    const matchStage = { userId: userObjectId };
+
+    if (type) matchStage.type = type;
+    if (search) matchStage.accountName = { $regex: search, $options: "i" };
+
+    const pipeline = [
+      { $match: matchStage },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "userDetails",
+        },
+      },
+      { $unwind: "$userDetails" },
+      {
+        $project: {
+          _id: 1,
+          type: 1,
+          accountName: 1,
+          accountNumber: 1,
+          balance: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          "userDetails.name": 1,
+          "userDetails.email": 1,
+        },
+      },
+      { $sort: { createdAt: -1 } },
+    ];
+
+    const bankings = await BankingModel.aggregate(pipeline);
+
+    const totalBalance = await BankingModel.aggregate([
+      { $match: { userId: userObjectId } },
+      { $group: { _id: null, totalBalance: { $sum: "$balance" } } },
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      count: bankings.length,
+      data: bankings,
+      totalBalance: totalBalance[0]?.totalBalance || 0,
+    });
+
+  } catch (err) {
+    console.error("Get All Banking Error:", err);
+    return res.status(500).json({ success: false, message: err.message });
   }
+}
+
 
   async getBankingById(req, res) {
     try {

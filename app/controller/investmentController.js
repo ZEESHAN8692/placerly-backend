@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { InvestmentModel, investmentValidation } from "../models/inventmentsModel.js";
 import { UserModel } from "../models/userModel.js";
+import { ExecutorModel } from "../models/transitionModel.js";
 
 class InvestmentController {
 
@@ -40,65 +41,93 @@ class InvestmentController {
   }
 
  
-  async getAllInvestments(req, res) {
-    try {
-      const userId = req.user?._id;
-      if (!userId)
-        return res.status(401).json({ success: false, message: "Unauthorized access" });
+async getAllInvestments(req, res) {
+  try {
+    let loggedInUserId = req.user?._id;
 
-      const { type, search, status } = req.query;
-      const matchStage = { userId: new mongoose.Types.ObjectId(userId) };
-
-      if (type) matchStage.type = type;
-      if (status) matchStage.status = status;
-      if (search) matchStage.name = { $regex: search, $options: "i" };
-
-      const pipeline = [
-        { $match: matchStage },
-        {
-          $lookup: {
-            from: "users",
-            localField: "userId",
-            foreignField: "_id",
-            as: "userDetails",
-          },
-        },
-        { $unwind: "$userDetails" },
-        {
-          $project: {
-            _id: 1,
-            type: 1,
-            name: 1,
-            amount: 1,
-            date: 1,
-            status: 1,
-            createdAt: 1,
-            updatedAt: 1,
-            "userDetails.name": 1,
-            "userDetails.email": 1,
-          },
-        },
-        { $sort: { createdAt: -1 } },
-      ];
-
-      const investments = await InvestmentModel.aggregate(pipeline);
-
-      const totalInvestment = await InvestmentModel.aggregate([
-        { $match: { userId: new mongoose.Types.ObjectId(userId) } },
-        { $group: { _id: null, totalAmount: { $sum: "$amount" } } },
-      ]);
-
-      return res.status(200).json({
-        success: true,
-        count: investments.length,
-        data: investments,
-        totalInvestment: totalInvestment[0]?.totalAmount || 0,
+    if (!loggedInUserId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized access",
       });
-    } catch (err) {
-      console.error("Get All Investments Error:", err);
-      return res.status(500).json({ success: false, message: err.message });
     }
+
+    let actualUserId = loggedInUserId;
+
+    if (req.user.role === "executor") {
+      const executor = await ExecutorModel.findOne({
+        email: req.user.email,
+        status: "approved",
+      });
+
+      if (!executor) {
+        return res.status(403).json({
+          success: false,
+          message: "You are not assigned as executor to any user",
+        });
+      }
+
+      actualUserId = executor.executorUserId;
+    }
+
+    const userObjectId = new mongoose.Types.ObjectId(actualUserId);
+
+    const { type, search, status } = req.query;
+
+    const matchStage = { userId: userObjectId };
+
+    if (type) matchStage.type = type;
+    if (status) matchStage.status = status;
+    if (search) matchStage.name = { $regex: search, $options: "i" };
+
+    const pipeline = [
+      { $match: matchStage },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "userDetails",
+        },
+      },
+      { $unwind: "$userDetails" },
+      {
+        $project: {
+          _id: 1,
+          type: 1,
+          name: 1,
+          amount: 1,
+          date: 1,
+          status: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          "userDetails.name": 1,
+          "userDetails.email": 1,
+        },
+      },
+      { $sort: { createdAt: -1 } },
+    ];
+
+    const investments = await InvestmentModel.aggregate(pipeline);
+
+    const totalInvestment = await InvestmentModel.aggregate([
+      { $match: { userId: userObjectId } },
+      { $group: { _id: null, totalAmount: { $sum: "$amount" } } },
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      count: investments.length,
+      data: investments,
+      totalInvestment: totalInvestment[0]?.totalAmount || 0,
+    });
+
+  } catch (err) {
+    console.error("Get All Investments Error:", err);
+    return res.status(500).json({ success: false, message: err.message });
   }
+}
+
 
   
   async getInvestmentById(req, res) {
