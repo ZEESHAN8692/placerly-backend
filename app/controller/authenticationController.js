@@ -129,9 +129,9 @@ class AuthenticationController {
 
       const token = jwt.sign({_id : user._id , name : user.name , email : user.email , phone : user.phone , role : user.role } , process.env.JWT_SECRET)
       res.cookie("token", token, {
-        httpOnly: false, 
-        secure: false, 
-        sameSite: "lax",
+        httpOnly: true, 
+        secure: true, 
+        sameSite: "none",
         path : "/"
       });
 
@@ -139,9 +139,9 @@ class AuthenticationController {
       console.log("subcriptionStatus" , subcriptionStatus)
       if(subcriptionStatus === "active"){
         res.cookie("subscriptionActive", subcriptionStatus, {
-          httpOnly: false, 
-          secure: false, 
-          sameSite: "lax",
+          httpOnly: true, 
+          secure: true, 
+          sameSite: "none",
           path : "/"
         })
       }
@@ -181,9 +181,9 @@ class AuthenticationController {
 
       if(user.role === "admin"){
         res.cookie("token", token, {
-          httpOnly: false, 
-          secure: false, 
-          sameSite: "lax",
+          httpOnly: true, 
+          secure: true, 
+          sameSite: "none",
           path : "/"
         });
         res.status(200).json({
