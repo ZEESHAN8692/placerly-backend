@@ -132,6 +132,7 @@ class AuthenticationController {
         httpOnly: false, 
         secure: true, 
         sameSite: "none",
+        domain:".vercel.app",
         path : "/"
       });
 
@@ -142,6 +143,7 @@ class AuthenticationController {
           httpOnly: false, 
           secure: true, 
           sameSite: "none",
+          domain:".vercel.app",
           path : "/"
         })
       }
@@ -184,6 +186,7 @@ class AuthenticationController {
           httpOnly: false, 
           secure: true, 
           sameSite: "none",
+          domain:".vercel.app",
           path : "/"
         });
         res.status(200).json({
