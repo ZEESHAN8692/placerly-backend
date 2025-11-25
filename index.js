@@ -16,7 +16,7 @@ Database()
 
 // Middleware
 app.use(cors({
-    origin: [process.env.CLIENT_URL, process.env.ADMIN_URL, "http://localhost:5174", "http://localhost:5173" ,],
+    origin: [process.env.CLIENT_URL, process.env.ADMIN_URL, "http://localhost:5174", "http://localhost:5173" ,"https://placerly-frontend-c7r6.vercel.app","https://placerly-admin.vercel.app"],
     credentials: true
 }));
 app.use(cookieParser(process.env.COOKIE_SECRET));
