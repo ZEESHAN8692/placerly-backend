@@ -128,25 +128,25 @@ class AuthenticationController {
       }
 
       const token = jwt.sign({_id : user._id , name : user.name , email : user.email , phone : user.phone , role : user.role } , process.env.JWT_SECRET)
-      res.cookie("token", token, {
-        httpOnly: false, 
-        secure: true, 
-        sameSite: "none",
-        domain:".vercel.app",
-        path : "/"
-      });
+      // res.cookie("token", token, {
+      //   httpOnly: false, 
+      //   secure: true, 
+      //   sameSite: "none",
+      //   domain:".vercel.app",
+      //   path : "/"
+      // });
 
       const subcriptionStatus = user.subscription.status
-      console.log("subcriptionStatus" , subcriptionStatus)
-      if(subcriptionStatus === "active"){
-        res.cookie("subscriptionActive", subcriptionStatus, {
-          httpOnly: false, 
-          secure: true, 
-          sameSite: "none",
-          domain:".vercel.app",
-          path : "/"
-        })
-      }
+      // console.log("subcriptionStatus" , subcriptionStatus)
+      // if(subcriptionStatus === "active"){
+      //   res.cookie("subscriptionActive", subcriptionStatus, {
+      //     httpOnly: false, 
+      //     secure: true, 
+      //     sameSite: "none",
+      //     domain:".vercel.app",
+      //     path : "/"
+      //   })
+      // }
 
 
       res.status(200).json({
@@ -184,13 +184,13 @@ class AuthenticationController {
       const token = jwt.sign({_id : user._id, name : user.name , email : user.email , phone : user.phone, role : user.role } , process.env.JWT_SECRET)
 
       if(user.role === "admin"){
-        res.cookie("token", token, {
-          httpOnly: false, 
-          secure: true, 
-          sameSite: "none",
-          domain:".vercel.app",
-          path : "/"
-        });
+        // res.cookie("token", token, {
+        //   httpOnly: false, 
+        //   secure: true, 
+        //   sameSite: "none",
+        //   domain:".vercel.app",
+        //   path : "/"
+        // });
         res.status(200).json({
           status: true,
           message : "Login successfully",
