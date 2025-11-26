@@ -121,10 +121,16 @@ async getAllInsurances(req, res) {
 
     const insurances = await InsuranceModel.aggregate(pipeline);
 
+    const totalInsurancesValue= await InsuranceModel.aggregate([
+      { $match: matchStage },
+      { $group: { _id: null, total: { $sum: "$premium" } } },
+    ]);
+
     return res.status(200).json({
       success: true,
       count: insurances.length,
       data: insurances,
+      totalInsurancesValue: totalInsurancesValue.length > 0 ? totalInsurancesValue[0].total : 0
     });
 
   } catch (err) {
