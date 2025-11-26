@@ -152,7 +152,9 @@ class AuthenticationController {
       res.status(200).json({
         status: true,
         message : "Login successfully",
-        data:user
+        data:user,
+        token,
+        subcriptionStatus
       })
     } catch (error) {
       console.error("Login Error:", error);
@@ -192,7 +194,8 @@ class AuthenticationController {
         res.status(200).json({
           status: true,
           message : "Login successfully",
-          data:user
+          data:user,
+          token
         })
       }else{
         res.status(401).json({status: false , message : "You are not admin"})

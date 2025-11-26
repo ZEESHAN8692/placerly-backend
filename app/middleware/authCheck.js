@@ -43,8 +43,8 @@ import { UserModel } from "../models/userModel.js";
 
 
 const AuthCheck = (req, res, next) => {
-  const token = req.cookies.token;
-    // req?.body?.token || req?.query?.token || req?.headers["x-access-token"];
+  // const token = req.cookies.token;
+  const token = req?.body?.token || req?.query?.token || req?.headers["x-access-token"];
   if (!token) {
     return res.status(400).json({
       message: "Token is required for access this page",
@@ -70,8 +70,9 @@ const AuthCheck = (req, res, next) => {
 
 
 const adminCheck = (req, res, next) => {
-  const token = req.cookies.token;
-    // req?.body?.token || req?.query?.token || req?.headers["x-access-token"];
+  // const token = req.cookies.token;
+  const token = req?.body?.token || req?.query?.token || req?.headers["x-access-token"];
+
   if (!token) {
     return res.status(400).json({
       message: "Token is required for access this page",
@@ -98,7 +99,8 @@ const adminCheck = (req, res, next) => {
 };
 
 const executorBlock = (req, res, next) => {
-  const token = req.cookies.token;
+  // const token = req.cookies.token;
+  const token = req?.body?.token || req?.query?.token || req?.headers["x-access-token"];
 
   if (!token) {
     return res.status(400).json({
