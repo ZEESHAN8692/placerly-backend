@@ -76,3 +76,5 @@ class AboutController {
     }
 
 }
+
+export default new AboutController();
